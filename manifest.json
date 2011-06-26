@@ -7,7 +7,6 @@
         "48":   "img/logo48.png",
         "128":  "img/logo128.png"
     },
-    "default_locale":   "en",
     "content_scripts":  [
         {
             "matches":  ["http://*/*", "https://*/*"],
