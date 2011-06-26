@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image</title>
+    <script src="lib/jquery-1.6.1.min.js"></script>
+    <script src="lib/udeferred.js"></script>
+    <script src="content-script.js"></script>
+    <script>
+        $(function() {
+            var qs = parseQueryString(location.search);
+            if (qs.src) {
+                document.title = qs.src;
+                $("a").attr("href", qs.src).text(qs.src);
+                $("img").attr("src", qs.src).bind("apngCreated", function() {
+                    window.history.replaceState(null, "", $(this).data("apng-src"));
+                });
+            }
+        });
+
+        function parseQueryString(qs) {
+            var result = {};
+            if(qs.charAt(0) == "?" || qs.charAt(0) == "#") qs = qs.substr(1);
+            qs.split("&").forEach(function(pair) {
+                var p = pair.split("=");
+                if(p.length == 1) p[1] = ""; else p[1] = decodeURIComponent(p[1].replace(/\+/g, '%20'));
+                if(p[0].substr(p[0].length - 2) == "[]") {
+                    p[0] = p[0].substr(0, p[0].length - 2);
+                    if(typeof result[p[0]] == "undefined" || result[p[0]].constructor != Array) result[p[0]] = [];
+                    result[p[0]].push(p[1]);
+                } else {
+                    result[p[0]] = p[1];
+                }
+            });
+            return result;
+        }
+    </script>
+    <style>
+        body {
+            background-color:   white;
+            font:               12pt Calibri, Arial, sans-serif;
+            margin:             0;
+        }
+        .head {
+            background-color:   #666;
+            color:  white;
+            padding:    0.25em 0.5em;
+            font-weight:    bold;
+            border-bottom:  1px solid #000;
+            -webkit-box-shadow:     0 0 6px #000;
+        }
+        .head a {
+            color:  #ffc;
+        }
+        img {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="head">
+        Link for save: <a href="#"></a>
+    </div>
+    <img src="img/1px.gif">
+</body>
+</html>

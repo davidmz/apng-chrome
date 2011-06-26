@@ -3,13 +3,14 @@
         return this;
     })(), D = Deferred;
 
-    var isEnabled = false;
+    var isEnabled = false, foundCount = 0;
 
     chrome.extension.onRequest.addListener(function(request, sender, callback) {
         if (request.action == "getInfo") {
             callback({
                 "hostname": global.location.hostname,
-                "enabled":  isEnabled
+                "enabled":  isEnabled,
+                "found":    foundCount
             });
         }
     });
@@ -45,6 +46,10 @@
                         image.src = chrome.extension.getURL("img/1px.gif");
                         image.style.backgroundImage = "-webkit-canvas(" + ctxName + ")";
                         image.style.backgroundSize = "100% 100%";
+
+                        var event = document.createEvent('Event');
+                        event.initEvent('apngCreated', true, true);
+                        image.dispatchEvent(event);
                     });
 
                     return urlPromises[image.src];
@@ -177,15 +182,22 @@
                     requestAnimationFrame(animationTick);
                 };
 
+                var isImagePage = (document.images.length == 1 && document.images[0].src == global.location.href);
+
                 var isAnimationFound = false;
                 var animationFound = function() {
+                    if (isImagePage) {
+                        global.location = chrome.extension.getURL("viewer.html?src=" + encodeURIComponent(global.location.href));
+                        return;
+                    }
                     if (!isAnimationFound) {
                         isAnimationFound = true;
                         requestAnimationFrame(animationTick);
                     }
+                    foundCount++;
                     chrome.extension.sendRequest({
-                        "action": "apngFound",
-                        "data": allAnimations.length
+                        "action":   "apngFound",
+                        "data":     foundCount
                     });
                 };
 

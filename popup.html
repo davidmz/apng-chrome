@@ -31,6 +31,12 @@
         }
         #domain { color: #333; }
         #change-link { display: none; }
+        #found-images {
+            font-size: 80%;
+            color: #999;
+            text-align: right;
+            display:    none;
+        }
 
         .if-disabled { display: none; }
         .disabled .if-disabled { display: inline; }
@@ -44,12 +50,17 @@
             var currentTab = null;
             chrome.tabs.getSelected(null, function(tab) {
                 currentTab = tab;
+                if (tab.url.indexOf(".") == -1) return;
                 chrome.tabs.sendRequest(tab.id, {"action": "getInfo"}, function(info) {
                     isEnabled = info.enabled;
                     hostName = info.hostname.toLowerCase();
                     $("#domain").text(hostName);
                     if (isEnabled) $(document.body).removeClass("disabled");
+                    if (hostName.indexOf(".") == -1) return; // extension page
                     $("#change-link").show();
+                    if (info.found > 0) {
+                        $("#found-images").show().find("span").text(info.found);
+                    }
                 });
             });
 
@@ -90,6 +101,9 @@
             <span class="if-disabled">Enable</span>
             APNG on <strong id="domain">this domain</strong></li>
         <li class="link" id="settings-link">Advanced settings…</li>
+        <li id="found-images">
+            <span>0</span> APNG image(s) found on page
+        </li>
     </ul>
 </body>
 </html>
