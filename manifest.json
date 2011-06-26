@@ -1,12 +1,13 @@
 {
-    "name":     "APNG for Chrome",
-    "version":  "0.5",
-    "description":  "APNG support for Google Chrome",
+    "name":     "APNG",
+    "version":  "0.5.0",
+    "description":  "Animated PNG support for Google Chrome™",
     "icons":    {
         "16":   "img/logo16.png",
         "48":   "img/logo48.png",
         "128":  "img/logo128.png"
     },
+    "default_locale":   "en",
     "content_scripts":  [
         {
             "matches":  ["http://*/*", "https://*/*"],
