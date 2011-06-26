@@ -30,6 +30,7 @@
             background-image: -webkit-linear-gradient(top, #fff8f0, #e8e4e0);
         }
         #domain { color: #333; }
+        #change-link { display: none; }
 
         .if-disabled { display: none; }
         .disabled .if-disabled { display: inline; }
@@ -47,7 +48,8 @@
                     isEnabled = info.enabled;
                     hostName = info.hostname.toLowerCase();
                     $("#domain").text(hostName);
-                    if (!isEnabled) $(document.body).addClass("disabled");
+                    if (isEnabled) $(document.body).removeClass("disabled");
+                    $("#change-link").show();
                 });
             });
 
@@ -74,7 +76,7 @@
     </script>
 
 </head>
-<body>
+<body class="disabled">
     <ul class="menu">
         <li>
             <img src="img/logo16.png" width="16" height="16" style="vertical-align: text-bottom;">
@@ -86,7 +88,7 @@
         <li class="link" id="change-link">
             <span class="if-not-disabled">Disable</span>
             <span class="if-disabled">Enable</span>
-            APNG on <strong id="domain"></strong></li>
+            APNG on <strong id="domain">this domain</strong></li>
         <li class="link" id="settings-link">Advanced settings…</li>
     </ul>
 </body>
