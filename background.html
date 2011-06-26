@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="lib/udeferred.js"></script>
+    <script src="lib/crc32.js"></script>
+    <script src="apng-parser.js"></script>
+    <script>
+        chrome.extension.onRequest.addListener(function(request, sender, callback) {
+            if (request.action == "loadAndParse") {
+                var url = request.data;
+                Deferred.pipeline(url)(loadBytes, parseAPNG)
+                    .done(function(aPng) { callback({"url": url, "ok": true, "apng": aPng}); })
+                    .fail(function(reason) { callback({"url": url, "ok": false, "reason": reason}); });
+
+            } else if (request.action == "checkHostname") {
+                var enabled = checkHostname(request.data);
+                chrome.browserAction.setIcon({
+                    "tabId":    sender.tab.id,
+                    "path":     enabled ? "img/apng-logo-19-on.png" : "img/apng-logo-19-off.png"
+                });
+                callback(enabled);
+            } else if (request.action == "apngFound") {
+                chrome.browserAction.setIcon({
+                    "tabId":    sender.tab.id,
+                    "path":     "img/apng-logo-19-found.png"
+                });
+                chrome.browserAction.setBadgeText({
+                    "tabId":    sender.tab.id,
+                    "text":     request.data.toString()
+                });
+            }
+        });
+
+        function loadBytes(url) {
+            var d = new Deferred();
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = "arraybuffer";
+            xhr.onload = function() {
+                if (this.status == 200) {
+                    d.resolve(new Uint8Array(this.response));
+                } else {
+                    d.reject(url + ": " + xhr.statusText);
+                }
+            };
+            xhr.send();
+            return d.promise();
+        }
+
+        function checkHostname(hostname) {
+            var mode = localStorage["mode"];
+            if (mode != "white") mode = "black";
+            var list = localStorage[mode + "List"] || "";
+            var hostNames = list.toLowerCase().split(/[^a-z0-9.-]+/);
+            var inList = (hostNames.indexOf(hostname.toLowerCase()) !== -1);
+
+            return (mode == "black") ? !inList : inList;
+        }
+
+    </script>
+</head>
+<body>
+</body>
+</html>

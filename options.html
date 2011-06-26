@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Options</title>
+    <style>
+        body {
+            background-color:   white;
+            font:               14pt Calibri, Arial, sans-serif;
+
+            margin:     5% 10%;
+        }
+        textarea {
+            width:  75%;
+            height: 10em;
+        }
+        .tab-div { display: none; }
+        label { cursor: pointer; }
+        label.selected { font-weight: bold; cursor: text; }
+        button {
+            padding: 0.25em 0.5em;
+            font-size: 100%;
+        }
+    </style>
+    <script src="lib/jquery-1.6.1.min.js"></script>
+    <script>
+        $(function() {
+            $("#work-mode-selects input").change(function() {
+                if (this.checked) {
+                    $(this).parent().siblings().removeClass("selected").end().addClass("selected");
+                    $(".tab-div").hide();
+                    $("#" + this.value + "-list").show();
+                }
+            });
+
+            var form = $("#settings-form")[0];
+
+            var mode = localStorage["mode"];
+            if (mode != "white") mode = "black";
+
+            $("#work-mode-selects input[value='" + mode + "']").attr("checked", "checked");
+            $("#work-mode-selects input:checked").change();
+
+            form.elements.blackList.value = localStorage["blackList"] || "";
+            form.elements.whiteList.value = localStorage["whiteList"] || "";
+
+            $(form).submit(function() {
+                localStorage["mode"] = $("#work-mode-selects input:checked").val();
+                localStorage["blackList"] = this.elements.blackList.value;
+                localStorage["whiteList"] = this.elements.whiteList.value;
+                window.close();
+                return false;
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1><img src="img/apng-logo-19-on.png" width="19" height="19"> APNG for Chrome</h1>
+
+    <form id="settings-form">
+        <p id="work-mode-selects">
+            Work mode:
+            <label><input type="radio" name="mode" value="black" checked> Black list</label>
+            <label><input type="radio" name="mode" value="white"> White list</label>
+        </p>
+        <div id="black-list" class="tab-div">
+            <p>
+                <strong>Black list</strong>
+            </p>
+            <p>
+                APNG for Chrome works on all domains <strong>except</strong> the following:
+            </p>
+            <p>
+                <textarea name="blackList"></textarea>
+            </p>
+        </div>
+        <div id="white-list" class="tab-div">
+            <p>
+                <strong>White list</strong>
+            </p>
+            <p>
+                APNG for Chrome works <strong>only</strong> on the following domains:
+            </p>
+            <p>
+                <textarea name="whiteList"></textarea>
+            </p>
+        </div>
+        <p>
+            <button type="submit">Save settings</button>
+        </p>
+    </form>
+
+</body>
+</html>

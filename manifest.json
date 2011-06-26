@@ -1,0 +1,27 @@
+{
+    "name":     "APNG for Chrome",
+    "version":  "0.5",
+    "description":  "APNG support for Google Chrome",
+    "icons":    {
+        "16":   "img/logo16.png",
+        "48":   "img/logo48.png",
+        "128":  "img/logo128.png"
+    },
+    "content_scripts":  [
+        {
+            "matches":  ["http://*/*", "https://*/*"],
+            "js":       [
+                "lib/udeferred.js",
+                "content-script.js"
+            ]
+        }
+    ],
+    "background_page":  "background.html",
+    "options_page":     "options.html",
+    "permissions":  ["http://*/*", "https://*/*", "tabs"],
+    "browser_action":   {
+        "default_icon":     "img/apng-logo-19-on.png",
+        "default_title":    "APNG for Chrome",
+        "default_popup":    "popup.html"
+    }
+}
