@@ -15,6 +15,17 @@
         }
     });
 
+    document.addEventListener("mousedown", function(event){
+        //right click
+        if(event.button == 2) {
+            if (event.target.apngStatus && event.target.apngStatus == "done") {
+                chrome.extension.sendRequest({ "action": "contextMenu", "data": "APNG" });
+            } else {
+                chrome.extension.sendRequest({ "action": "contextMenu", "data": "normal" });
+            }
+        }
+    }, true);
+
     chrome.extension.sendRequest({"action": "checkHostname", "data": global.location.hostname},
             function(response) {
                 if (!response) return;
@@ -43,7 +54,7 @@
                             image.style.width = global.getComputedStyle(image).width;
                         if (!image.hasAttribute("height") && !image.style.height)
                             image.style.height = global.getComputedStyle(image).height;
-                        image.src = chrome.extension.getURL("img/1px.gif");
+                        image.src = chrome.extension.getURL("img/empty.gif?src=" + encodeURIComponent(image.src));
                         image.style.backgroundImage = "-webkit-canvas(" + ctxName + ")";
                         image.style.backgroundSize = "100% 100%";
 

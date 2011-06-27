@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <script src="lib/udeferred.js"></script>
     <script src="lib/crc32.js"></script>
+    <script src="lib/misc.js"></script>
     <script src="apng-parser.js"></script>
     <script>
         chrome.extension.onRequest.addListener(function(request, sender, callback) {
@@ -30,8 +31,28 @@
                     "tabId":    sender.tab.id,
                     "text":     request.data.toString()
                 });
+            } else if (request.action == "contextMenu") {
+                if (request.data == "APNG" && !isApngContextMenu) {
+                    chrome.contextMenus.create({
+                        "title":    "Open / Save APNG image…",
+                        "contexts": ["image"],
+                        "onclick":  openInNewTab
+                    });
+                    isApngContextMenu = true;
+                } else if(request.data != "APNG" && isApngContextMenu) {
+                    chrome.contextMenus.removeAll();
+                    isApngContextMenu = false;
+                }
             }
         });
+        var isApngContextMenu = false;
+
+        function openInNewTab(info, tab) {
+            var url = info.srcUrl.replace("img/empty.gif", "viewer.html");
+            chrome.tabs.getSelected(null, function(tab) {
+                chrome.tabs.create({ "url":  url, "index": tab.index + 1 });
+            });
+        }
 
         function loadBytes(url) {
             var d = new Deferred();
