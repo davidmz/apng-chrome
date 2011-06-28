@@ -15,17 +15,6 @@
         }
     });
 
-    document.addEventListener("mousedown", function(event){
-        //right click
-        if(event.button == 2) {
-            if (event.target.apngStatus && event.target.apngStatus == "done") {
-                chrome.extension.sendRequest({ "action": "contextMenu", "data": "APNG" });
-            } else {
-                chrome.extension.sendRequest({ "action": "contextMenu", "data": "normal" });
-            }
-        }
-    }, true);
-
     chrome.extension.sendRequest({"action": "checkHostname", "data": global.location.hostname},
             function(response) {
                 if (!response) return;
@@ -49,12 +38,13 @@
 
                     urlPromises[image.src].done(function(a) {
                         var ctxName = a.getCSSCanvasContext();
-                        image.setAttribute("data-apng-src", image.src);
                         if (!image.hasAttribute("width") && !image.style.width)
                             image.style.width = global.getComputedStyle(image).width;
                         if (!image.hasAttribute("height") && !image.style.height)
                             image.style.height = global.getComputedStyle(image).height;
-                        image.src = chrome.extension.getURL("img/empty.gif?src=" + encodeURIComponent(image.src));
+
+                        image.apngContextName = ctxName;
+                        image.style.content = "url(" + chrome.extension.getURL("img/empty.gif") + ")";
                         image.style.backgroundImage = "-webkit-canvas(" + ctxName + ")";
                         image.style.backgroundSize = "100% 100%";
 
@@ -158,15 +148,21 @@
                 };
 
                 var checkImages = function() {
-                    var allImages = document.images; //.querySelectorAll("img[src*='.png']:not([data-apng-status])");
+                    var allImages = document.images;
                     for (var i = 0, l = allImages.length; i < l; i++) {
                         var image = allImages[i];
+                        if (image.apngContextName && !image.style.content) {
+                            image.style.content = "url(" + chrome.extension.getURL("img/empty.gif") + ")";
+                            image.style.backgroundImage = "-webkit-canvas(" + image.apngContextName + ")";
+                            image.style.backgroundSize = "100% 100%";
+                            continue;
+                        }
                         if (
-                                image.apngStatus
-                                ||
-                                !/\.png($|\?)/.test(image.src)
-                                &&
-                                !/attachment\.php\?attachmentid=/.test(image.src)
+                            image.apngStatus
+                            ||
+                            !/\.png($|\?)/.test(image.src)
+                            &&
+                            !/attachment\.php\?attachmentid=/.test(image.src)
                         ) continue;
                         image.apngStatus = "progress";
                         (function(image) {
@@ -193,14 +189,8 @@
                     requestAnimationFrame(animationTick);
                 };
 
-                var isImagePage = (document.images.length == 1 && document.images[0].src == global.location.href);
-
                 var isAnimationFound = false;
                 var animationFound = function() {
-                    if (isImagePage) {
-                        global.location = chrome.extension.getURL("viewer.html?src=" + encodeURIComponent(global.location.href));
-                        return;
-                    }
                     if (!isAnimationFound) {
                         isAnimationFound = true;
                         requestAnimationFrame(animationTick);

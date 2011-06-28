@@ -1,6 +1,6 @@
 {
     "name":     "APNG",
-    "version":  "0.5.4",
+    "version":  "0.6.0",
     "description":  "Animated PNG support for Google Chrome™",
     "icons":    {
         "16":   "img/logo16.png",
@@ -18,7 +18,7 @@
     ],
     "background_page":  "background.html",
     "options_page":     "options.html",
-    "permissions":  ["http://*/*", "https://*/*", "tabs", "contextMenus"],
+    "permissions":  ["http://*/*", "https://*/*", "tabs"],
     "browser_action":   {
         "default_icon":     "img/apng-logo-19-off.png",
         "default_title":    "APNG for Chrome",
