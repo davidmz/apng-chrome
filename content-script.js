@@ -158,18 +158,18 @@
                             continue;
                         }
                         if (
-                            image.apngStatus
+                            image.hasAttribute("data-is-apng")
                             ||
                             !/\.png($|\?)/.test(image.src)
                             &&
                             !/attachment\.php\?attachmentid=/.test(image.src)
                         ) continue;
-                        image.apngStatus = "progress";
                         (function(image) {
+                            image.setAttribute("data-is-apng", "progress");
                             animateImage(image).done(function() {
-                                image.apngStatus = "done";
+                                image.setAttribute("data-is-apng", "yes");
                             }).fail(function() {
-                                image.apngStatus = "failed";
+                                image.setAttribute("data-is-apng", "no");
                             });
                         })(image);
                     }

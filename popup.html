@@ -51,13 +51,11 @@
             var currentTab = null;
             chrome.tabs.getSelected(null, function(tab) {
                 currentTab = tab;
-                if (tab.url.indexOf(".") == -1) return;
                 chrome.tabs.sendRequest(tab.id, {"action": "getInfo"}, function(info) {
                     isEnabled = info.enabled;
                     hostName = info.hostname.toLowerCase();
                     $("#domain").text(hostName);
                     if (isEnabled) $(document.body).removeClass("disabled");
-                    if (hostName.indexOf(".") == -1) return; // extension page
                     $("#change-link").show();
                     if (info.found > 0) {
                         $("#found-images").show().find("span").text(info.found);

@@ -53,8 +53,8 @@
         function checkHostname(hostname) {
             var mode = localStorage["mode"];
             if (mode != "white") mode = "black";
-            var list = localStorage[mode + "List"] || "";
-            var hostNames = list.toLowerCase().split(/[^a-z0-9.-]+/);
+            var list = localStorage[mode + "List"];
+            var hostNames = list ? list.toLowerCase().split(/[^a-z0-9.-]+/) : [];
             var inList = (hostNames.indexOf(hostname.toLowerCase()) !== -1);
 
             return (mode == "black") ? !inList : inList;

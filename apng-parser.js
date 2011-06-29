@@ -120,6 +120,8 @@
                     var delayD      = readWord(bytes, off + 8 + 22);
                     if (delayD == 0) delayD = 100;
                     frame.delay = 1000 * delayN / delayD;
+                    // see http://mxr.mozilla.org/mozilla/source/gfx/src/shared/gfxImageFrame.cpp#343
+                    if (frame.delay <= 10) frame.delay = 100;
                     aPNG.playTime += frame.delay;
                     frame.disposeOp = readByte(bytes, off + 8 + 24);
                     frame.blendOp   = readByte(bytes, off + 8 + 25);

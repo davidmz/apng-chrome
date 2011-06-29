@@ -1,6 +1,6 @@
 {
     "name":     "APNG",
-    "version":  "0.6.0",
+    "version":  "0.6.1",
     "description":  "Animated PNG support for Google Chrome™",
     "icons":    {
         "16":   "img/logo16.png",
