@@ -149,6 +149,7 @@
 
         // Собираем кадры
         var createdUrls = 0;
+        var preBlob = preDataBuilder.getBlob(), postBlob = postDataBuilder.getBlob();
         for (var f = 0; f < aPNG.frames.length; f++) {
             frame = aPNG.frames[f];
 
@@ -157,11 +158,10 @@
             headerDataBytes.set(makeDWordArray(frame.width), 0);
             headerDataBytes.set(makeDWordArray(frame.height), 4);
             bb.append(makeChunkBytes("IHDR", headerDataBytes).buffer);
-            bb.append(preDataBuilder.getBlob());
+            bb.append(preBlob);
             for (var j = 0; j < frame.dataParts.length; j++)
                 bb.append(makeChunkBytes("IDAT", frame.dataParts[j]).buffer);
-            bb.append(postDataBuilder.getBlob());
-            //frame.url = URL.createObjectURL(bb.getBlob("image/png"));
+            bb.append(postBlob);
             var reader = new FileReader();
             (function(frame) {
                 reader.onload = function(e) {
