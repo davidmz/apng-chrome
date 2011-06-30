@@ -180,6 +180,7 @@
                 var checkBgImages = function() {
                     for (var si = 0, sl = document.styleSheets.length; si < sl; si++) {
                         var ss = document.styleSheets[si];
+                        if (!ss.rules) continue;
                         for (var ri = 0, rl = ss.rules.length; ri < rl; ri++) {
                             var rule = ss.rules[ri];
                             if (!rule.apngStatus && rule.style.backgroundImage) {
