@@ -183,7 +183,7 @@
                         if (!ss.rules) continue;
                         for (var ri = 0, rl = ss.rules.length; ri < rl; ri++) {
                             var rule = ss.rules[ri];
-                            if (!rule.apngStatus && rule.style.backgroundImage) {
+                            if (!rule.apngStatus && rule.style && rule.style.backgroundImage) {
                                 rule.apngStatus = true;
                                 var matches = rule.style.backgroundImage.match(/url\((['"]?)(.*?)\1\)/g) || [];
                                 for (var mi = 0; mi < matches.length; mi++) {
