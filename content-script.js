@@ -23,20 +23,24 @@
                 var allAnimations = [];
                 var urlPromises = {};
 
-                var animateImage = function(image) {
-                    if (typeof urlPromises[image.src] == "undefined") {
-                        urlPromises[image.src] = D.pipeline(image.src)(
+                var loadAndAnimateUrl = function(url) {
+                    if (typeof urlPromises[url] == "undefined") {
+                        urlPromises[url] = D.pipeline(url)(
                                 loadAndParse,
-                                function(apng) {
-                                    var a = new Animation(apng);
+                                function(apng) { return new Animation(apng); },
+                                function(a) {
                                     allAnimations.push(a);
                                     animationFound();
                                     return a;
                                 }
                         );
                     }
+                    return urlPromises[url];
+                };
 
-                    urlPromises[image.src].done(function(a) {
+
+                var animateImage = function(image) {
+                    return loadAndAnimateUrl(image.src).done(function(a) {
                         var ctxName = a.getCSSCanvasContext();
                         if (!image.hasAttribute("width") && !image.style.width)
                             image.style.width = global.getComputedStyle(image).width;
@@ -52,8 +56,6 @@
                         event.initEvent('apngCreated', true, true);
                         image.dispatchEvent(event);
                     });
-
-                    return urlPromises[image.src];
                 };
 
                 var ctxNamePrefix = "apng-chrome-ext-css-", ctxNameCounter = 1;
@@ -160,7 +162,7 @@
                         if (
                             image.hasAttribute("data-is-apng")
                             ||
-                            !/\.png($|\?)/.test(image.src)
+                            !/\.a?png($|\?)/.test(image.src)
                             &&
                             !/attachment\.php\?attachmentid=/.test(image.src)
                         ) continue;
@@ -175,8 +177,36 @@
                     }
                 };
 
-                setInterval(checkImages, 1000);
+                var checkBgImages = function() {
+                    for (var si = 0, sl = document.styleSheets.length; si < sl; si++) {
+                        var ss = document.styleSheets[si];
+                        for (var ri = 0, rl = ss.rules.length; ri < rl; ri++) {
+                            var rule = ss.rules[ri];
+                            if (!rule.apngStatus && rule.style.backgroundImage) {
+                                rule.apngStatus = true;
+                                var matches = rule.style.backgroundImage.match(/url\((['"]?)(.*?)\1\)/g) || [];
+                                for (var mi = 0; mi < matches.length; mi++) {
+                                    var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
+                                    if (/\.a?png($|\?)/.test(url)) {
+                                        (function(url, rule, m) {
+                                            loadAndAnimateUrl(url).done(function(a) {
+                                                var ctxName = a.getCSSCanvasContext();
+                                                rule.style.backgroundImage = rule.style.backgroundImage.replace(m, "-webkit-canvas(" + ctxName + ")");
+                                            });
+                                        })(url, rule, matches[mi]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                setInterval(function() {
+                    checkImages();
+                    checkBgImages();
+                }, 1000);
                 checkImages();
+                checkBgImages();
 
                 var requestAnimationFrame = global.requestAnimationFrame || global.webkitRequestAnimationFrame;
 
