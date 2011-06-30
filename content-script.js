@@ -150,9 +150,8 @@
                 };
 
                 var checkImages = function() {
-                    var allImages = document.images;
-                    for (var i = 0, l = allImages.length; i < l; i++) {
-                        var image = allImages[i];
+                    for (var i = 0, l = document.images.length; i < l; i++) {
+                        var image = document.images[i];
                         if (image.apngContextName && !image.style.content) {
                             image.style.content = "url(" + chrome.extension.getURL("img/empty.gif") + ")";
                             image.style.backgroundImage = "-webkit-canvas(" + image.apngContextName + ")";
@@ -180,11 +179,11 @@
                 var checkBgImages = function() {
                     for (var si = 0, sl = document.styleSheets.length; si < sl; si++) {
                         var ss = document.styleSheets[si];
-                        if (!ss.rules) continue;
+                        if (ss.apngChecked || !ss.rules) continue;
+                        ss.apngChecked = true;
                         for (var ri = 0, rl = ss.rules.length; ri < rl; ri++) {
-                            var rule = ss.rules[ri];
-                            if (!rule.apngStatus && rule.style && rule.style.backgroundImage) {
-                                rule.apngStatus = true;
+                            var rule = document.styleSheets[si].rules[ri];
+                            if (rule.style && rule.style.backgroundImage) {
                                 var matches = rule.style.backgroundImage.match(/url\((['"]?)(.*?)\1\)/g) || [];
                                 for (var mi = 0; mi < matches.length; mi++) {
                                     var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
