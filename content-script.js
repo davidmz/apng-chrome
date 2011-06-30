@@ -161,9 +161,7 @@
                         if (
                             image.hasAttribute("data-is-apng")
                             ||
-                            !/\.a?png($|\?)/.test(image.src)
-                            &&
-                            !/attachment\.php\?attachmentid=/.test(image.src)
+                            /\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(image.src)
                         ) continue;
                         (function(image) {
                             image.setAttribute("data-is-apng", "progress");
@@ -171,11 +169,18 @@
                                 image.setAttribute("data-is-apng", "yes");
                             }).fail(function() {
                                 image.setAttribute("data-is-apng", "no");
+                                if (!image.apngListenerAttached) {
+                                    image.addEventListener("load", onImageLoad, false);
+                                    image.apngListenerAttached = true;
+                                }
                             });
                         })(image);
                     }
                 };
 
+                // Если картинка сменила src
+                var onImageLoad = function(e) { e.target.removeAttribute("data-is-apng"); };
+                
                 var checkBgImages = function() {
                     for (var si = 0, sl = document.styleSheets.length; si < sl; si++) {
                         var ss = document.styleSheets[si];
@@ -187,7 +192,7 @@
                                 var matches = rule.style.backgroundImage.match(/url\((['"]?)(.*?)\1\)/g) || [];
                                 for (var mi = 0; mi < matches.length; mi++) {
                                     var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
-                                    if (/\.a?png($|\?)/.test(url)) {
+                                    if (!/\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(url)) {
                                         (function(url, rule, m) {
                                             loadAndAnimateUrl(url).done(function(a) {
                                                 var ctxName = a.getCSSCanvasContext();
