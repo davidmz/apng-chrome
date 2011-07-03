@@ -48,9 +48,7 @@
                             image.style.height = global.getComputedStyle(image).height;
 
                         image.apngContextName = ctxName;
-                        image.style.content = "url(" + chrome.extension.getURL("img/empty.gif") + ")";
-                        image.style.backgroundImage = "-webkit-canvas(" + ctxName + ")";
-                        image.style.backgroundSize = "100% 100%";
+                        image.style.content = "-webkit-canvas(" + ctxName + ")";
 
                         var event = document.createEvent('Event');
                         event.initEvent('apngCreated', true, true);
@@ -153,9 +151,12 @@
                     for (var i = 0, l = document.images.length; i < l; i++) {
                         var image = document.images[i];
                         if (image.apngContextName && !image.style.content) {
-                            image.style.content = "url(" + chrome.extension.getURL("img/empty.gif") + ")";
-                            image.style.backgroundImage = "-webkit-canvas(" + image.apngContextName + ")";
-                            image.style.backgroundSize = "100% 100%";
+                            if (!image.hasAttribute("width") && !image.style.width)
+                                image.style.width = global.getComputedStyle(image).width;
+                            if (!image.hasAttribute("height") && !image.style.height)
+                                image.style.height = global.getComputedStyle(image).height;
+
+                            image.style.content = "-webkit-canvas(" + image.apngContextName + ")";
                             continue;
                         }
                         if (
@@ -181,24 +182,29 @@
                 // Если картинка сменила src
                 var onImageLoad = function(e) { e.target.removeAttribute("data-is-apng"); };
                 
-                var checkBgImages = function() {
+                var checkCSSImages = function() {
                     for (var si = 0, sl = document.styleSheets.length; si < sl; si++) {
                         var ss = document.styleSheets[si];
                         if (ss.apngChecked || !ss.rules) continue;
                         ss.apngChecked = true;
                         for (var ri = 0, rl = ss.rules.length; ri < rl; ri++) {
                             var rule = document.styleSheets[si].rules[ri];
-                            if (rule.style && rule.style.backgroundImage) {
-                                var matches = rule.style.backgroundImage.match(/url\((['"]?)(.*?)\1\)/g) || [];
-                                for (var mi = 0; mi < matches.length; mi++) {
-                                    var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
-                                    if (!/\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(url)) {
-                                        (function(url, rule, m) {
-                                            loadAndAnimateUrl(url).done(function(a) {
-                                                var ctxName = a.getCSSCanvasContext();
-                                                rule.style.backgroundImage = rule.style.backgroundImage.replace(m, "-webkit-canvas(" + ctxName + ")");
-                                            });
-                                        })(url, rule, matches[mi]);
+                            if (rule.style) {
+                                var props = ["backgroundImage", "listStyleImage"], prop;
+                                while (prop = props.shift()) {
+                                    if (rule.style[prop]) {
+                                        var matches = rule.style[prop].match(/url\((['"]?)(.*?)\1\)/g) || [];
+                                        for (var mi = 0; mi < matches.length; mi++) {
+                                            var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
+                                            if (!/\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(url)) {
+                                                (function(url, rule, prop, m) {
+                                                    loadAndAnimateUrl(url).done(function(a) {
+                                                        var ctxName = a.getCSSCanvasContext();
+                                                        rule.style[prop] = rule.style[prop].replace(m, "-webkit-canvas(" + ctxName + ")");
+                                                    });
+                                                })(url, rule, prop, matches[mi]);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -208,10 +214,10 @@
 
                 setInterval(function() {
                     checkImages();
-                    checkBgImages();
+                    checkCSSImages();
                 }, 1000);
                 checkImages();
-                checkBgImages();
+                checkCSSImages();
 
                 var requestAnimationFrame = global.requestAnimationFrame || global.webkitRequestAnimationFrame;
 
