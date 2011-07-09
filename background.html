@@ -22,7 +22,7 @@
                     "path":     enabled ? "img/apng-logo-19-on.png" : "img/apng-logo-19-off.png"
                 });
                 callback(enabled);
-            } else if (request.action == "apngFound") {
+            } else if (request.action == "apngFound" && request.data > 0) {
                 chrome.browserAction.setIcon({
                     "tabId":    sender.tab.id,
                     "path":     "img/apng-logo-19-found.png"
@@ -41,7 +41,12 @@
             xhr.responseType = "arraybuffer";
             xhr.onload = function() {
                 if (this.status == 200) {
-                    d.resolve(new Uint8Array(this.response));
+                    d.resolve({
+                        "isPng":        isPng(this),
+                        "isFromCache":  isFromCache(this),
+                        "contentType":  this.getResponseHeader("Content-Type"),
+                        "bytes":        new Uint8Array(this.response)
+                    });
                 } else {
                     d.reject(url + ": " + xhr.statusText);
                 }
@@ -58,6 +63,33 @@
             var inList = (hostNames.indexOf(hostname.toLowerCase()) !== -1);
 
             return (mode == "black") ? !inList : inList;
+        }
+
+        function isPng(xhr) {
+            var h = xhr.getResponseHeader("Content-Type");
+            return (h !== null && h.indexOf("image/png") === 0);
+        }
+
+        function isFromCache(xhr) {
+            var h;
+            h = xhr.getResponseHeader("Cache-Control");
+            if (h !== null && (
+                    h.indexOf("no-cache") != -1 ||
+                    h.indexOf("no-store") != -1 ||
+                    h.indexOf("must-revalidate") != -1
+                    )) return false;
+
+            h = xhr.getResponseHeader("Pragma");
+            if (h !== null &&
+                    h.indexOf("no-cache") != -1
+                    ) return false;
+
+            h = xhr.getResponseHeader("Expires");
+            if (h !== null &&
+                    new Date(h) <= new Date()
+                    ) return false;
+
+            return true;
         }
 
     </script>

@@ -63,9 +63,54 @@
         } while(res !== false && type != "IEND" && off < bytes.length);
     };
 
-    global.parseAPNG = function(bytes) {
+    var resolveStillImage = function(d, imageInfo) {
+        if (imageInfo.isFromCache) {
+            d.reject(imageInfo.isPng ? "Not an animated PNG" : "Not a PNG image");
+        } else {
+            var aPNG = {
+                isStillImage:   true,
+                width:  0,
+                height: 0,
+                numPlays:   1,
+                playTime:   1,
+                frames:     []
+            };
+            var builder = new BlobBuilder();
+            builder.append(imageInfo.bytes.buffer);
+            var imgReader = new FileReader();
+            imgReader.onload = function(e) {
+                var url = e.target.result;
+                var img = new Image();
+                img.onload = function() {
+                    aPNG.width = this.width;
+                    aPNG.height = this.height;
+                    aPNG.frames.push({
+                        width:  this.width,
+                        height: this.height,
+                        left:   0,
+                        top:    0,
+                        delay:  1,
+                        disposeOp:  1,
+                        blendOp:    1,
+                        url:    url
+                    });
+                    d.resolve(aPNG);
+                };
+                img.src = url;
+            };
+            imgReader.readAsDataURL(builder.getBlob(imageInfo.contentType));
+        }
+    };
+
+    global.parseAPNG = function(info) {
         var d = new D();
 
+        if (!info.isPng) {
+            resolveStillImage(d, info);
+            return d.promise();
+        }
+
+        var bytes = info.bytes;
         for (var i = 0; i < PNG_SIGNATURE_BYTES.length; i++) {
             if (PNG_SIGNATURE_BYTES[i] != bytes[i]) {
                 d.reject("Invalid PNG file signature");
@@ -82,7 +127,7 @@
             }
         });
         if (!isAnimated) {
-            d.reject("Not an animated PNG");
+            resolveStillImage(d, info);
             return d.promise();
         }
 
@@ -92,6 +137,7 @@
                 headerDataBytes = null,
                 frame = null,
                 aPNG = {
+                    isStillImage:   false,
                     width:  0,
                     height: 0,
                     numPlays:   0,

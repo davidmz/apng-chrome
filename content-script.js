@@ -30,7 +30,7 @@
                                 function(apng) { return new Animation(apng); },
                                 function(a) {
                                     allAnimations.push(a);
-                                    animationFound();
+                                    animationFound(a);
                                     return a;
                                 }
                         );
@@ -163,11 +163,13 @@
                             image.hasAttribute("data-is-apng")
                             ||
                             /\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(image.src)
+                            ||
+                            (image.width == 1 && image.height == 1)
                         ) continue;
                         (function(image) {
                             image.setAttribute("data-is-apng", "progress");
-                            animateImage(image).done(function() {
-                                image.setAttribute("data-is-apng", "yes");
+                            animateImage(image).done(function(a) {
+                                image.setAttribute("data-is-apng", a.isStillImage ? "static" : "yes");
                             }).fail(function() {
                                 image.setAttribute("data-is-apng", "no");
                                 if (!image.apngListenerAttached) {
@@ -231,12 +233,12 @@
                 };
 
                 var isAnimationFound = false;
-                var animationFound = function() {
+                var animationFound = function(a) {
                     if (!isAnimationFound) {
                         isAnimationFound = true;
                         requestAnimationFrame(animationTick);
                     }
-                    foundCount++;
+                    if (!a.isStillImage) foundCount++;
                     chrome.extension.sendRequest({
                         "action":   "apngFound",
                         "data":     foundCount
