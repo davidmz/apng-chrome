@@ -35,6 +35,7 @@
         });
 
         function loadBytes(url) {
+            if (url.substr(0,5) == "data:") return loadDataUrl(url);
             var d = new Deferred();
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
@@ -52,6 +53,31 @@
                 }
             };
             xhr.send();
+            return d.promise();
+        }
+
+        function loadDataUrl(url) {
+            var d = new Deferred();
+
+            var parts = url.substr(5).split(",", 2);
+            parts[0] = parts[0].split(";");
+            var data = parts[1], mime = parts[0][0], enc = parts[0][parts[0].length - 1];
+
+            var result = {
+                "isPng":        (mime.indexOf("image/png") === 0),
+                "isFromCache":  true,
+                "contentType":  mime,
+                "bytes":        null
+            };
+
+            if (result.isPng) {
+                var str = (enc == "base64") ? atob(data) : unescape(data);
+                var bytes = new Uint8Array(str.length);
+                for (var i = 0; i < str.length; i++) bytes[i] = str.charCodeAt(i);
+                result.bytes = bytes;
+            }
+            d.resolve(result);
+
             return d.promise();
         }
 
