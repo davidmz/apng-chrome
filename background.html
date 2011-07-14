@@ -36,7 +36,19 @@
 
         function loadBytes(url) {
             if (url.substr(0,5) == "data:") return loadDataUrl(url);
+
             var d = new Deferred();
+
+            if (inStopList(url)) {
+                d.resolve({
+                    "isPng":        false,
+                    "isFromCache":  true,
+                    "contentType":  "application/octet-stream",
+                    "bytes":        null
+                });
+                return d.promise();
+            }
+
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.responseType = "arraybuffer";
@@ -79,6 +91,16 @@
             d.resolve(result);
 
             return d.promise();
+        }
+
+        // безусловный запрет на скачивание
+        function inStopList(url) {
+            return (
+                    /^https?:\/\/mt\d\.google\.\w+\//.test(url) ||
+                    /^https?:\/\/\w+\.gstatic\.\w+\//.test(url) ||
+                    /^https?:\/\/[\w.]+\.tiles\.virtualearth\.net\//.test(url) ||
+                    /^https?:\/\/\w+\.maps\.yandex\.net\//.test(url)
+                    );
         }
 
         function checkHostname(hostname) {
