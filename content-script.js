@@ -147,6 +147,10 @@
                     return d.promise();
                 };
 
+                var probablyPngUrl = function(url) {
+                    return !/\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(url.split("?")[0]);
+                };
+
                 var checkImages = function() {
                     for (var i = 0, l = document.images.length; i < l; i++) {
                         var image = document.images[i];
@@ -162,7 +166,7 @@
                         if (
                             image.hasAttribute("data-is-apng")
                             ||
-                            /\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(image.src)
+                            !probablyPngUrl(image.src)
                             ||
                             (image.width == 1 && image.height == 1)
                         ) continue;
@@ -198,7 +202,7 @@
                                         var matches = rule.style[prop].match(/url\((['"]?)(.*?)\1\)/g) || [];
                                         for (var mi = 0; mi < matches.length; mi++) {
                                             var url = matches[mi].match(/url\((['"]?)(.*?)\1\)/)[2];
-                                            if (!/\.(gif|jpe?g|bmp|svgz?)($|\?)/i.test(url)) {
+                                            if (probablyPngUrl(url)) {
                                                 (function(url, rule, prop, m) {
                                                     loadAndAnimateUrl(url).done(function(a) {
                                                         var ctxName = a.getCSSCanvasContext();
