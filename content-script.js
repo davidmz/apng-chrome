@@ -41,6 +41,13 @@
 
                 var animateImage = function(image) {
                     return loadAndAnimateUrl(image.src).done(function(a) {
+
+                        if (a.isStillImage) {
+                            // статика, рисуем прямо в img, поскольку это может быть анимированный gif
+                            image.url = a.frames[0].url;
+                            return;
+                        }
+
                         var ctxName = a.getCSSCanvasContext();
                         if (!image.hasAttribute("width") && !image.style.width)
                             image.style.width = global.getComputedStyle(image).width;
