@@ -1,0 +1,33 @@
+.apng-frames-list {
+    margin-top: 20px;
+}
+.apng-frames-list div {
+    border:     1px solid #999;
+    display:    inline-block;
+    position:   relative;
+    margin-left:    10px;
+    margin-bottom:  10px;
+    background:     transparent url(chrome-extension://__MSG_@@extension_id__/img/transp.png);
+}
+
+.apng-frames-list img {
+    position:   absolute;
+}
+
+.apng-frames-list span {
+    text-decoration: underline;
+    color: #999;
+    font: 10pt Arial, sans-serif;
+    margin-left: 0.5em;
+    cursor: pointer;
+}
+.apng-frames-list span::before {
+    content:    url(chrome-extension://__MSG_@@extension_id__/img/apng-logo-19-off.png);
+    position:   relative;
+    top:        6px;
+    padding-right: 4px;
+}
+.apng-frames-list span:hover, .apng-frames-list span.shown { color: black; }
+.apng-frames-list span:hover::before, .apng-frames-list span.shown::before {
+    content: url(chrome-extension://__MSG_@@extension_id__/img/apng-logo-19-on.png);
+}

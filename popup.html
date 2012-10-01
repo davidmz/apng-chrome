@@ -5,20 +5,23 @@
     <meta charset="utf-8">
     <style>
         body {
-            background-color:   white;
-            font:               12pt Calibri, Arial, sans-serif;
-            margin:             0;
-            width:              300px;
+            background-color: white;
+            font: 12pt Calibri, Arial, sans-serif;
+            margin: 0;
+            width: 300px;
         }
+
         .menu {
             list-style: none;
             margin: 0;
             padding: 0;
         }
+
         .menu li {
             margin: 0.25em;
             padding: 0.25em 0;
         }
+
         .menu li.link {
             padding: 0.25em;
             border: 2px solid #ccc;
@@ -26,83 +29,58 @@
             background-image: -webkit-linear-gradient(top, #f8f8f8, #e0e0e0);
             cursor: pointer;
         }
+
         .menu li.link:hover {
-            border-color:   #f90;
+            border-color: #f90;
             background-image: -webkit-linear-gradient(top, #fff8f0, #e8e4e0);
         }
-        #domain { color: #333; }
-        #change-link { display: none; }
+
+        #domain {
+            color: #333;
+        }
+
+        #change-link {
+            display: none;
+        }
+
         #found-images {
             font-size: 80%;
             color: #999;
             text-align: right;
-            display:    none;
+            display: none;
         }
 
-        .if-disabled { display: none; }
-        .disabled .if-disabled { display: inline; }
-        .disabled .if-not-disabled { display: none; }
+        .if-disabled {
+            display: none;
+        }
+
+        .disabled .if-disabled {
+            display: inline;
+        }
+
+        .disabled .if-not-disabled {
+            display: none;
+        }
     </style>
-    <script src="lib/jquery-1.6.1.min.js"></script>
-    <script>
-        $(function() {
-            var isEnabled = false;
-            var hostName = null;
-            var currentTab = null;
-            chrome.tabs.getSelected(null, function(tab) {
-                currentTab = tab;
-                chrome.tabs.sendRequest(tab.id, {"action": "getInfo"}, function(info) {
-                    isEnabled = info.enabled;
-                    hostName = info.hostname.toLowerCase();
-                    $("#domain").text(hostName);
-                    if (isEnabled) $(document.body).removeClass("disabled");
-                    $("#change-link").show();
-                    if (info.found > 0) {
-                        $("#found-images").show().find("span").text(info.found);
-                    }
-                });
-            });
-
-            $(".link").live("click", function() { window.close(); });
-
-            $("#settings-link").click(function() {
-                chrome.tabs.create({url: chrome.extension.getURL("options.html")});
-            });
-
-            $("#change-link").click(function() {
-                var mode = localStorage["mode"];
-                if (mode != "white") mode = "black";
-                var list = localStorage[mode + "List"];
-                var hostNames = list ? list.toLowerCase().split(/[^a-z0-9.-]+/) : [];
-                if (mode == "black" && isEnabled || mode == "white" && !isEnabled) {
-                    hostNames.push(hostName);
-                } else {
-                    hostNames.splice(hostNames.indexOf(hostName), 1);
-                }
-                localStorage[mode + "List"] = hostNames.join("\n");
-                chrome.tabs.executeScript(currentTab.id, {code:"window.location.reload()"}, null);
-            });
-        });
-    </script>
-
+    <script src="lib/popup.js"></script>
 </head>
 <body class="disabled">
-    <ul class="menu">
-        <li>
-            <img src="img/logo16.png" width="16" height="16" style="vertical-align: text-bottom;">
-            APNG in
-            <strong style="color: #f33" class="if-disabled">disabled</strong>
-            <strong style="color: #090" class="if-not-disabled">enabled</strong>
-            on this site
-        </li>
-        <li class="link" id="change-link">
-            <span class="if-not-disabled">Disable</span>
-            <span class="if-disabled">Enable</span>
-            APNG on <strong id="domain">this domain</strong></li>
-        <li class="link" id="settings-link">Advanced settings…</li>
-        <li id="found-images">
-            <span>0</span> APNG image(s) found on page
-        </li>
-    </ul>
+<ul class="menu">
+    <li>
+        <img src="img/logo16.png" width="16" height="16" style="vertical-align: text-bottom;">
+        APNG in
+        <strong style="color: #f33" class="if-disabled">disabled</strong>
+        <strong style="color: #090" class="if-not-disabled">enabled</strong>
+        on this site
+    </li>
+    <li class="link" id="change-link">
+        <span class="if-not-disabled">Disable</span>
+        <span class="if-disabled">Enable</span>
+        APNG on <strong id="domain">this domain</strong></li>
+    <li class="link" id="settings-link">Advanced settings…</li>
+    <li id="found-images">
+        <span>0</span> APNG image(s) found on page
+    </li>
+</ul>
 </body>
 </html>

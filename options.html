@@ -22,37 +22,8 @@
             font-size: 100%;
         }
     </style>
-    <script src="lib/jquery-1.6.1.min.js"></script>
-    <script>
-        $(function() {
-            $("#work-mode-selects input").change(function() {
-                if (this.checked) {
-                    $(this).parent().siblings().removeClass("selected").end().addClass("selected");
-                    $(".tab-div").hide();
-                    $("#" + this.value + "-list").show();
-                }
-            });
-
-            var form = $("#settings-form")[0];
-
-            var mode = localStorage["mode"];
-            if (mode != "white") mode = "black";
-
-            $("#work-mode-selects input[value='" + mode + "']").attr("checked", "checked");
-            $("#work-mode-selects input:checked").change();
-
-            form.elements.blackList.value = localStorage["blackList"] || "";
-            form.elements.whiteList.value = localStorage["whiteList"] || "";
-
-            $(form).submit(function() {
-                localStorage["mode"] = $("#work-mode-selects input:checked").val();
-                localStorage["blackList"] = this.elements.blackList.value;
-                localStorage["whiteList"] = this.elements.whiteList.value;
-                window.close();
-                return false;
-            });
-        });
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="lib/options.js"></script>
 </head>
 <body>
     <h1><img src="img/apng-logo-19-on.png" width="19" height="19"> APNG for Chrome</h1>

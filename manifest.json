@@ -1,27 +1,40 @@
 {
-    "name":     "APNG",
-    "version":  "0.7.1",
-    "description":  "Animated PNG support for Google Chrome™",
-    "icons":    {
-        "16":   "img/logo16.png",
-        "48":   "img/logo48.png",
-        "128":  "img/logo128.png"
+    "name":"APNG",
+    "version":"2.0.0",
+    "description":"Animated PNG support for Google Chrome™",
+    "icons":{
+        "16":"img/logo16.png",
+        "48":"img/logo48.png",
+        "128":"img/logo128.png"
     },
-    "content_scripts":  [
+    "manifest_version":2,
+    "background":{
+        "scripts":["background.js"]
+    },
+    "content_scripts":[
         {
-            "matches":  ["<all_urls>"],
-            "js":       [
+            "matches":["<all_urls>"],
+            "js":[
                 "lib/udeferred.js",
-                "content-script.js"
-            ]
+                "lib/crc32.js",
+                "lib/apng-parser.js",
+                "stop-list.js",
+                "content.js"
+            ],
+            "css": [ "content.css" ]
         }
     ],
-    "background_page":  "background.html",
+    "permissions":["<all_urls>", "tabs", "webRequest", "contextMenus"],
+    "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'",
     "options_page":     "options.html",
-    "permissions":  ["<all_urls>", "tabs"],
     "browser_action":   {
         "default_icon":     "img/apng-logo-19-off.png",
         "default_title":    "APNG for Chrome",
         "default_popup":    "popup.html"
-    }
+    },
+    "web_accessible_resources":[
+        "img/transp.png",
+        "img/apng-logo-19-off.png",
+        "img/apng-logo-19-on.png"
+    ]
 }
