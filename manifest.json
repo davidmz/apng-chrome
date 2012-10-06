@@ -1,6 +1,6 @@
 {
     "name":"APNG",
-    "version":"2.0.0",
+    "version":"2.0.1",
     "description":"Animated PNG support for Google Chrome™",
     "icons":{
         "16":"img/logo16.png",
@@ -21,7 +21,8 @@
                 "stop-list.js",
                 "content.js"
             ],
-            "css": [ "content.css" ]
+            "css": [ "content.css" ],
+            "all_frames": true
         }
     ],
     "permissions":["<all_urls>", "tabs", "webRequest", "contextMenus"],
