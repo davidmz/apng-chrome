@@ -8,6 +8,7 @@
     var requestAnimationFrame = global.requestAnimationFrame || global.webkitRequestAnimationFrame;
 
     var UNKNOWN_URL = "*UNKNOWN*";
+    var NOT_AN_APNG = "*NOT_AN_APNG*";
 
     var loadBytes = function (url) {
         var d = D();
@@ -52,7 +53,7 @@
                     if (resp == "yes") {
                         d.resolve(url);
                     } else if (resp == "no") {
-                        d.reject("not an apng");
+                        d.reject(NOT_AN_APNG);
                     } else {
                         d.reject(UNKNOWN_URL);
                     }
@@ -153,6 +154,10 @@
                             "url":image.src,
                             "isIt":false
                         });
+                        if (err == NOT_AN_APNG) {
+                            image.style.content = "";
+                            delete(image.apngContextName);
+                        }
                     }
                 });
     };
