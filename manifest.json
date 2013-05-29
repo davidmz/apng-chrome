@@ -1,7 +1,7 @@
 {
     "name":"APNG",
-    "version":"2.0.4",
-    "description":"Animated PNG support for Google Chrome™",
+    "version":"2.0.5",
+    "description":"Animated PNG support for WebKit/Blink browsers",
     "icons":{
         "16":"img/logo16.png",
         "48":"img/logo48.png",
@@ -30,7 +30,7 @@
     "options_page":     "options.html",
     "browser_action":   {
         "default_icon":     "img/apng-logo-19-off.png",
-        "default_title":    "APNG for Chrome",
+        "default_title":    "APNG for Chrome/Opera/WebKit/Blink",
         "default_popup":    "popup.html"
     },
     "web_accessible_resources":[

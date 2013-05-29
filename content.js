@@ -250,6 +250,18 @@
         });
 
         if (document.images.length == 1 && document.images[0].src == location.href) {
+
+            /**
+             * Strange bug in Opera 15/Next
+             */
+            if (/Opera/.test(navigator['vendor'])) {
+                var link = document.createElement("link");
+                link.href = "about:blank";
+                link.type = "text/css";
+                link.rel = "stylesheet";
+                document.body.appendChild(link);
+            }
+
             var a = allAnimations[0];
             var cont = document.body.appendChild(document.createElement("div"));
             var cont2 = document.body.appendChild(document.createElement("div"));
