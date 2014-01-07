@@ -56,11 +56,47 @@ var lastPNGFound = new Date();
     }
 })();
 
+var redirects = {};
+
+chrome.webRequest.onBeforeRedirect.addListener(
+        function (info) {
+            if (!(info.url in PNGUrls)) {
+                if (info.redirectUrl in PNGUrls) {
+                    PNGUrls[info.url] = PNGUrls[info.redirectUrl];
+                } else {
+                    if (info.redirectUrl in redirects) {
+                        redirects[info.redirectUrl].push(info.url);
+                    } else {
+                        redirects[info.redirectUrl] = [info.url];
+                    }
+                }
+            }
+        },
+        { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] }
+);
+
 chrome.webRequest.onCompleted.addListener(
         function (info) {
             if (!(info.url in PNGUrls)) {
                 PNGUrls[info.url] = (isPNG(info) && !isVolatile(info));
                 lastPNGFound = new Date();
+            }
+            if (info.url in redirects) {
+                result = PNGUrls[info.url];
+                urls = redirects[info.url];
+                delete redirects[info.url]
+                while (urls.length) {
+                    next = [];
+                    for (var i = 0, l = urls.length; i < l; i++) {
+                        url = urls[i];
+                        PNGUrls[url] = result;
+                        if (url in redirects) {
+                            next = next.concat(redirects[url]);
+                            delete redirects[url];
+                        }
+                    }
+                    urls = next;
+                }
             }
         },
         { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] },
