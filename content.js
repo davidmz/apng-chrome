@@ -141,8 +141,8 @@
         var image = this, w = image.width, h = image.height;
         loadAndParseURL(image.src)
                 .done(function (a) {
-                    if (!image.hasAttribute("width") && (!image.style.width || image.style.width == "auto")) image.style.width = w + "px";
-                    if (!image.hasAttribute("height") && (!image.style.height || image.style.height == "auto")) image.style.height = h + "px";
+                    if (!image.hasAttribute("width") && (!image.style.width || image.style.width == "auto")) image.style.width = w + "px !important";
+                    if (!image.hasAttribute("height") && (!image.style.height || image.style.height == "auto")) image.style.height = h + "px !important";
                     var ctxName = a.getCanvasName();
                     image.apngContextName = ctxName;
                     image.style.content = "-webkit-canvas(" + ctxName + ")";
