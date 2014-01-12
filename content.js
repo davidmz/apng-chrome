@@ -207,6 +207,43 @@
         }
     };
 
+    var checkRedditEmotes = (location.hostname == "www.reddit.com") ? (function() {
+        var redditClasses = {};
+        var redditStyle = document.head.appendChild(document.createElement('style')).sheet;
+        return function () {
+            var els = document.querySelectorAll("#header .pagename a, a:empty");
+            for (var i = 0, l = els.length; i < l; i++) {
+                var el = els[i];
+                if ("apngStatus" in el) continue;
+                el.apngStatus = true;
+                var bgi = window.getComputedStyle(el, null).backgroundImage;
+                var bgiAfter = window.getComputedStyle(el, ":after").backgroundImage;
+                if (bgi) {
+                    var url = bgi.substr(4, bgi.length - 4 - 1);
+                    (function (url, el) {
+                        loadAndParseURL(url)
+                            .done(function (a) {
+                                el.style.backgroundImage = "-webkit-canvas(" + a.getCanvasName() + ")";
+                            });
+                    })(url, el);
+                }
+                if (bgiAfter) {
+                    url = bgiAfter.substr(4, bgiAfter.length - 4 - 1);
+                    (function (url, el) {
+                        loadAndParseURL(url)
+                            .done(function (a) {
+                                var className = a.getCanvasName()+ "-after";
+                                if (!(className in redditClasses)) {
+                                    redditClasses[className] = true;
+                                    redditStyle.insertRule('.' + className + ':after { background-image: -webkit-canvas(' + a.getCanvasName() + ') !important; }', 0);
+                                }
+                                el.classList.add(className);
+                            });
+                    })(url, el);
+                }
+            }
+        };
+    })() : function() {};
 
     chrome.extension.sendRequest(
             {"action":"checkHostname", "data":global.location.hostname},
@@ -217,6 +254,7 @@
                     (function () {
                         checkImages();
                         checkInlineCSSImages();
+                        checkRedditEmotes();
                         setTimeout(arguments.callee, 1000);
                     })();
                 }
