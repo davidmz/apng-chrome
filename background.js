@@ -39,6 +39,7 @@ var checkHostname = function (hostname) {
 };
 
 var PNGUrls = {};
+var redirects = {};
 
 // GC
 var lastPNGFound = new Date();
@@ -48,6 +49,7 @@ var lastPNGFound = new Date();
         chrome.webRequest.handlerBehaviorChanged();
         lastPNGFound = new Date();
         PNGUrls = {};
+        redirects = {};
         // возвращаемся через час
         setTimeout(arguments.callee, 60*60*1000);
     } else {
@@ -67,10 +69,24 @@ chrome.webRequest.onCompleted.addListener(
         ["responseHeaders"]
 );
 
+chrome.webRequest.onBeforeRedirect.addListener(
+    function (info) { redirects[info.url] = info.redirectUrl; },
+    { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] }
+);
+
+var deepCheckUrl = function(url) {
+    if (url in PNGUrls) {
+        return PNGUrls[url] ? "yes" : "no";
+    } else if (url in redirects) {
+        return deepCheckUrl(redirects[url]);
+    } else {
+        return "unknown";
+    }
+};
+
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
     if (request.action == "checkUrl") {
-        var resp = (request.url in PNGUrls) ? (PNGUrls[request.url] ? "yes" : "no") : "unknown";
-        callback(resp);
+        callback(deepCheckUrl(request.url));
     } else if (request.action == "isAnAPNG") {
         PNGUrls[request.url] = request.isIt;
     } else if (request.action == "checkHostname") {
