@@ -7,7 +7,6 @@
 
     var requestAnimationFrame = global.requestAnimationFrame || global.webkitRequestAnimationFrame;
 
-    var UNKNOWN_URL = "*UNKNOWN*";
     var NOT_AN_APNG = "*NOT_AN_APNG*";
 
     var loadBytes = function (url) {
@@ -50,12 +49,10 @@
         chrome.extension.sendRequest(
                 {"action":"checkUrl", "url":url},
                 function (resp) {
-                    if (resp == "yes") {
+                    if (resp) {
                         d.resolve(url);
-                    } else if (resp == "no") {
-                        d.reject(NOT_AN_APNG);
                     } else {
-                        d.reject(UNKNOWN_URL);
+                        d.reject(NOT_AN_APNG);
                     }
                 }
         );
@@ -154,16 +151,14 @@
                     image.style.content = "-webkit-canvas(" + ctxName + ")";
                 })
                 .fail(function (err) {
-                    if (err != UNKNOWN_URL) {
-                        chrome.extension.sendRequest({
-                            "action":"isAnAPNG",
-                            "url":image.src,
-                            "isIt":false
-                        });
-                        if (err == NOT_AN_APNG) {
-                            image.style.content = "";
-                            delete(image.apngContextName);
-                        }
+                    chrome.extension.sendRequest({
+                        "action":"isAnAPNG",
+                        "url":image.src,
+                        "isIt":false
+                    });
+                    if (err == NOT_AN_APNG) {
+                        image.style.content = "";
+                        delete(image.apngContextName);
                     }
                 });
     };

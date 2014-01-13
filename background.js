@@ -61,8 +61,11 @@ var lastPNGFound = new Date();
 chrome.webRequest.onCompleted.addListener(
         function (info) {
             if (!(info.url in PNGUrls)) {
-                PNGUrls[info.url] = (isPNG(info) && !isVolatile(info));
+                PNGUrls[info.url] = Deferred();
                 lastPNGFound = new Date();
+            }
+            if (!PNGUrls[info.url].promise().isResolved()) {
+                PNGUrls[info.url].resolve(isPNG(info) && !isVolatile(info));
             }
         },
         { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] },
@@ -74,21 +77,25 @@ chrome.webRequest.onBeforeRedirect.addListener(
     { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] }
 );
 
-var deepCheckUrl = function(url) {
-    if (url in PNGUrls) {
-        return PNGUrls[url] ? "yes" : "no";
-    } else if (url in redirects) {
-        return deepCheckUrl(redirects[url]);
-    } else {
-        return "unknown";
+var deepCheckUrl = function(url, d) {
+    if (url in redirects) {
+        deepCheckUrl(redirects[url], d);
+    } else if (!(url in PNGUrls)) {
+        PNGUrls[url] = Deferred();
     }
+    PNGUrls[url].promise().done(function(result) { d.resolve(result); });
 };
 
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
     if (request.action == "checkUrl") {
-        callback(deepCheckUrl(request.url));
+        var d = Deferred();
+        d.promise().done(callback);
+        deepCheckUrl(request.url, d);
     } else if (request.action == "isAnAPNG") {
-        PNGUrls[request.url] = request.isIt;
+        if (!(request.url in PNGUrls)) {
+            PNGUrls[request.url] = Deferred();
+        }
+        PNGUrls[request.url].resolve(request.isIt);
     } else if (request.action == "checkHostname") {
         var enabled = checkHostname(request.data);
         chrome.browserAction.setIcon({

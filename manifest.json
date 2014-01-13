@@ -1,6 +1,6 @@
 {
     "name":"APNG",
-    "version":"2.1.0",
+    "version":"2.1.1",
     "description":"Animated PNG support for WebKit/Blink browsers",
     "icons":{
         "16":"img/logo16.png",
@@ -9,7 +9,10 @@
     },
     "manifest_version":2,
     "background":{
-        "scripts":["background.js"]
+        "scripts":[
+            "lib/udeferred.js",
+            "background.js"
+        ]
     },
     "content_scripts":[
         {
