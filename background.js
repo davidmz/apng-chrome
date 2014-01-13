@@ -39,7 +39,10 @@ var checkHostname = function (hostname) {
 };
 
 var PNGUrls = {};
-var redirects = {};
+var getPNGDef = function(url) {
+    if (!(url in PNGUrls)) PNGUrls[url] = Deferred();
+    return PNGUrls[url];
+};
 
 // GC
 var lastPNGFound = new Date();
@@ -49,7 +52,6 @@ var lastPNGFound = new Date();
         chrome.webRequest.handlerBehaviorChanged();
         lastPNGFound = new Date();
         PNGUrls = {};
-        redirects = {};
         // возвращаемся через час
         setTimeout(arguments.callee, 60*60*1000);
     } else {
@@ -60,42 +62,28 @@ var lastPNGFound = new Date();
 
 chrome.webRequest.onCompleted.addListener(
         function (info) {
-            if (!(info.url in PNGUrls)) {
-                PNGUrls[info.url] = Deferred();
-                lastPNGFound = new Date();
-            }
-            if (!PNGUrls[info.url].promise().isResolved()) {
-                PNGUrls[info.url].resolve(isPNG(info) && !isVolatile(info));
-            }
+            if (!(info.url in PNGUrls)) lastPNGFound = new Date();
+            var d = getPNGDef(info.url);
+            if (!d.promise().isResolved()) d.resolve(isPNG(info) && !isVolatile(info));
         },
         { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] },
         ["responseHeaders"]
 );
 
 chrome.webRequest.onBeforeRedirect.addListener(
-    function (info) { redirects[info.url] = info.redirectUrl; },
+    function (info) {
+        getPNGDef(info.redirectUrl).promise().done(function(x) {
+            getPNGDef(info.url).resolve(x);
+        });
+    },
     { urls:["<all_urls>"], types:["image", "main_frame", "sub_frame"] }
 );
 
-var deepCheckUrl = function(url, d) {
-    if (url in redirects) {
-        deepCheckUrl(redirects[url], d);
-    } else if (!(url in PNGUrls)) {
-        PNGUrls[url] = Deferred();
-    }
-    PNGUrls[url].promise().done(function(result) { d.resolve(result); });
-};
-
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
     if (request.action == "checkUrl") {
-        var d = Deferred();
-        d.promise().done(callback);
-        deepCheckUrl(request.url, d);
+        getPNGDef(request.url).promise().done(callback);
     } else if (request.action == "isAnAPNG") {
-        if (!(request.url in PNGUrls)) {
-            PNGUrls[request.url] = Deferred();
-        }
-        PNGUrls[request.url].resolve(request.isIt);
+        getPNGDef(request.url).resolve(request.isIt);
     } else if (request.action == "checkHostname") {
         var enabled = checkHostname(request.data);
         chrome.browserAction.setIcon({
