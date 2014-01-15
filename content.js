@@ -202,54 +202,64 @@
         }
     };
 
-    var checkRedditEmotes = (location.hostname == "www.reddit.com") ? (function() {
-        var redditClasses = {};
-        var redditStyle = document.head.appendChild(document.createElement('style')).sheet;
-        return function () {
-            var els = document.querySelectorAll("#header .pagename a, a:empty");
-            for (var i = 0, l = els.length; i < l; i++) {
-                var el = els[i];
-                if ("apngStatus" in el) continue;
-                el.apngStatus = true;
-                var bgi = window.getComputedStyle(el, null).backgroundImage;
-                var bgiAfter = window.getComputedStyle(el, ":after").backgroundImage;
-                if (bgi) {
-                    var url = bgi.substr(4, bgi.length - 4 - 1);
-                    (function (url, el) {
-                        loadAndParseURL(url)
-                            .done(function (a) {
-                                el.style.backgroundImage = "-webkit-canvas(" + a.getCanvasName() + ")";
-                            });
-                    })(url, el);
+    var fixRedditStyles = function () {
+        for (var i = 0, l = document.styleSheets.length; i < l; i++) {
+            var sheet = document.styleSheets[i];
+            if (/\.thumbs\.redditmedia\.com\//.test(sheet.href)) {
+                var d = D();
+                if (sheet.cssRules === null) {
+                    var sheetNode = sheet.ownerNode;
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', sheet.href, true);
+                    xhr.responseType = "text";
+                    xhr.onload = (function (sheetNode, d) {
+                        return function () {
+                            if (this.status != 200) return;
+                            var styleElement = document.createElement("style");
+                            if (sheetNode.hasAttribute("media")) styleElement.setAttribute("media", sheetNode.getAttribute("media"));
+                            styleElement.setAttribute("data-apng-original-href", sheetNode.getAttribute("href"));
+                            styleElement.textContent = this.response;
+                            sheetNode.parentNode.insertBefore(styleElement, sheetNode);
+                            sheetNode.parentNode.removeChild(sheetNode);
+                            d.resolve(styleElement.sheet.cssRules);
+                        };
+                    })(sheetNode, d);
+                    xhr.send();
+                } else {
+                    d.resolve(sheet.cssRules);
                 }
-                if (bgiAfter) {
-                    url = bgiAfter.substr(4, bgiAfter.length - 4 - 1);
-                    (function (url, el) {
-                        loadAndParseURL(url)
-                            .done(function (a) {
-                                var className = a.getCanvasName()+ "-after";
-                                if (!(className in redditClasses)) {
-                                    redditClasses[className] = true;
-                                    redditStyle.insertRule('.' + className + ':after { background-image: -webkit-canvas(' + a.getCanvasName() + ') !important; }', 0);
-                                }
-                                el.classList.add(className);
+                d.promise().done(function (rules) {
+                    for (var i = 0; i < rules.length; i++) {
+                        var rule = rules[i];
+                        ["backgroundImage", "listStyleImage"].forEach(function (prop) {
+                            if (!(prop in rule.style)) return;
+                            (rule.style[prop].match(/url\((['"]?)(.*?)\1\)/g) || []).forEach(function (m) {
+                                (function (m, rule, prop) {
+                                    var url = m.match(/url\((['"]?)(.*?)\1\)/)[2];
+                                    loadAndParseURL(url).done(function (a) {
+                                        rule.style[prop] = rule.style[prop].replace(m, "-webkit-canvas(" + a.getCanvasName() + ")");
+                                    });
+                                })(m, rule, prop);
                             });
-                    })(url, el);
-                }
+                        });
+                    }
+                });
             }
-        };
-    })() : function() {};
+        }
+    };
+
 
     chrome.extension.sendRequest(
             {"action":"checkHostname", "data":global.location.hostname},
             function (response) {
                 if (response) {
                     isEnabled = true;
+
+                    if (location.hostname == "www.reddit.com") fixRedditStyles();
                     // main check loop
                     (function () {
                         checkImages();
                         checkInlineCSSImages();
-                        checkRedditEmotes();
                         setTimeout(arguments.callee, 1000);
                     })();
                 }
