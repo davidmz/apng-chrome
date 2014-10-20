@@ -5,8 +5,6 @@
 
     var isEnabled = false;
 
-    var requestAnimationFrame = global.requestAnimationFrame || global.webkitRequestAnimationFrame;
-
     var NOT_AN_APNG = "*NOT_AN_APNG*";
 
     var loadBytes = function (url) {
@@ -232,7 +230,7 @@
                     for (var i = 0; i < rules.length; i++) {
                         var rule = rules[i];
                         ["backgroundImage", "listStyleImage"].forEach(function (prop) {
-                            if (!(prop in rule.style)) return;
+                            if (!("style" in rule) || !(prop in rule.style)) return;
                             (rule.style[prop].match(/url\((['"]?)(.*?)\1\)/g) || []).forEach(function (m) {
                                 (function (m, rule, prop) {
                                     var url = m.match(/url\((['"]?)(.*?)\1\)/)[2];
