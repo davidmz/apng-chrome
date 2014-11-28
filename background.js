@@ -7,9 +7,21 @@ var isPNG = function (info) {
     }
     return false;
 };
+
+var isURLVolatile = function (url) {
+    // https://id.tmtm.ru/captcha/ etc.
+    return url.indexOf("captcha") != -1;
+};
+
+var isURLNotVolatile = function (url) {
+    return !!url.match(/^https?:\/\/([^/]+\.)?googlegroups\.com\//);
+};
+
 var isVolatile = function (info) {
-    if (info.fromCache) return false;
     if (info.method != "GET") return true;
+    if (isURLVolatile(info.url)) return true;
+    if (isURLNotVolatile(info.url)) return false;
+    if (info.fromCache) return false;
     for (var i = 0, l = info.responseHeaders.length; i < l; i++) {
         var n = info.responseHeaders[i].name.toLowerCase();
         var v = info.responseHeaders[i].value.toLowerCase();
