@@ -42,11 +42,19 @@ var isVolatile = function (info) {
 
 
 var checkHostname = function (hostname) {
+    hostname = hostname.toLowerCase();
     var mode = localStorage["mode"];
     if (mode != "white") mode = "black";
     var list = localStorage[mode + "List"];
-    var hostNames = list ? list.toLowerCase().split(/[^a-z0-9.-]+/) : [];
-    var inList = (hostNames.indexOf(hostname.toLowerCase()) !== -1);
+    var hostNames = list ? list.toLowerCase().split(/[^a-z0-9.*-]+/) : [];
+    var inList = false;
+    hostNames.forEach(function (it) {
+        if (it.substr(0, 2) == "*.") {
+            inList = inList || (hostname.substr(-it.length + 1) == it.substr(1));
+        } else {
+            inList = inList || (hostname == it);
+        }
+    });
     return (mode == "black") ? !inList : inList;
 };
 

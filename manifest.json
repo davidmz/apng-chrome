@@ -1,6 +1,6 @@
 {
     "name":"APNG",
-    "version":"2.1.4",
+    "version":"2.1.5",
     "description":"Animated PNG support for WebKit/Blink browsers",
     "icons":{
         "16":"img/logo16.png",
