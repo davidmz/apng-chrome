@@ -1,0 +1,10 @@
+<svg viewBox="0 0 16 16" width="16" heigth="16">
+    <path stroke="#ff1133"
+          stroke-width="4"
+          stroke-linejoin="miter"
+          fill="none"
+          d="M 14,2
+           l -6,0
+           a 6 6 0 1 0 6 6
+           z"/>
+</svg>

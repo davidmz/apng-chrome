@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>APNG Options</title>
+    <style>
+        textarea {
+            width:  100%;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" style="display: none">
+    <p>
+        Mode:
+        <select v-model="mode">
+            <option value="black">Black list</option>
+            <option value="white">White list</option>
+        </select>
+    </p>
+    <p>
+        <span v-if="isBlack">Run extension on all domains <strong>except</strong> the following:</span>
+        <span v-else>Run extension <strong>only</strong> on the following domains:</span>
+        <br>
+        <textarea v-model="listText"></textarea>
+    </p>
+    <p>
+        Put one domain name per line. You can use wildcard symbol for leftmost domain part: <em>*.example.com</em>.
+    </p>
+    <p>
+        <button type="submit" @click="save">Save</button>
+    </p>
+</div>
+<!--suppress HtmlUnknownTarget -->
+<script src="../options.js"></script>
+</body>
+</html>

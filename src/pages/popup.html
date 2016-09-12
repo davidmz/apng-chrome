@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>APNG for Chrome</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <style>
+        .container {
+            min-width:  350px;
+            margin-top: 10px;
+        }
+
+        .apng-logo {
+            vertical-align: text-bottom;
+            margin-right:   0.1em;
+        }
+
+        a {
+            cursor: pointer;
+        }
+
+        .url-list {
+            list-style-type: none;
+            padding-left:    0;
+            max-height:      300px;
+            overflow-y:      auto;
+        }
+
+        .url-list li {
+            max-width:     300px;
+            overflow-x:    hidden;
+            white-space:   nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+<div class="container hidden" id="app">
+    <div v-if="isNormalPage">
+        <p>
+            <img src="../icons/logo16.png" alt="APNG logo" width="16" height="16" class="apng-logo">
+            APNG is
+            <span class="text-{{enabled ? 'success' : 'danger'}}">{{enabled ? 'enabled' : 'disabled'}}</span>
+            on <strong>{{hostName}}</strong>
+        </p>
+        <p>
+            <button
+                    type="button"
+                    class="btn btn-sm btn-{{enabled ? 'primary' : 'success'}}"
+                    @click="toggleEnabled"
+            >{{enabled ? 'Disable' : 'Enable'}}</button>
+            (<a @click="openSettings">advanced settings</a>)
+        </p>
+        <div class="small text-muted" v-if="foundUrls.length &gt; 0">
+            {{foundUrls.length > 1 ? foundUrls.length + ' APNGs' : 'APNG'}} found:
+            <ul class="url-list">
+                <li v-for="url in foundUrls"><a href="{{url}}" target="_blank">{{url}}</a></li>
+            </ul>
+        </div>
+    </div>
+    <div v-else>
+        <p>
+            <img src="../icons/logo16.png" alt="APNG logo" width="16" height="16" class="apng-logo">
+            APNG extension is not available on this page.
+        </p>
+    </div>
+</div>
+<!--suppress HtmlUnknownTarget -->
+<script src="../popup.js"></script>
+</body>
+</html>
