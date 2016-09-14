@@ -2,6 +2,7 @@ var fs = require('fs-extra');
 var path = require('path');
 var webpack = require('webpack');
 var FolderZip = require('folder-zip');
+var ChromeExtension = require("crx");
 var WebpackOnBuildPlugin = require("on-build-webpack");
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 
@@ -20,13 +21,13 @@ module.exports = {
         path: unpackedDir,
         filename: "[name].js"
     },
-    // devtool: "source-map",
+    devtool: "source-map",
     module: {
         loaders: [
             {
                 test: /\.js$/,
                 loader: "babel-loader",
-                exclude: /node_modules|build/,
+                include: [path.join(sourceDir, 'js')],
                 query: {
                     presets: ["es2015", "stage-0"]
                 }
@@ -50,20 +51,36 @@ module.exports = {
 
             var zip = new FolderZip();
             zip.zipFolder(unpackedDir, {excludeParentFolder: true}, function () {
-                zip.writeToFile(path.join(buildDir, 'extension-v' + pkgData.version + '.zip'))
-            })
-        }),
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: '"production"'
+                zip.writeToFile(path.join(buildDir, pkgData.name + '-v' + pkgData.version + '.zip'))
+            });
+
+            var privateKey = path.join(__dirname, 'key.pem');
+            if (fs.existsSync(privateKey)) {
+                var crx = new ChromeExtension({privateKey: fs.readFileSync(privateKey)});
+                crx.load(unpackedDir).then(function () {
+                    return crx.pack().then(function (crxBuffer) {
+                        fs.writeFileSync(
+                            path.join(buildDir, pkgData.name + '-v' + pkgData.version + '.crx'),
+                            crxBuffer
+                        );
+                    })
+                });
             }
+
         }),
+        /*
+         new webpack.DefinePlugin({
+         'process.env': {
+         NODE_ENV: '"production"'
+         }
+         }),
+         */
         new webpack.optimize.UglifyJsPlugin({
             compress: {
                 warnings: false,
                 screw_ie8: true
             },
-            // sourceMap: true,
+            sourceMap: true,
             comments: false
         }),
     ]

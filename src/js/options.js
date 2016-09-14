@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import List from './modules/background/hosts-list';
 
 const list = new List();

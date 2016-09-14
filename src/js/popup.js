@@ -1,13 +1,11 @@
 import {parse} from 'url';
-import Vue from 'vue';
 import List from './modules/background/hosts-list';
 import * as msgTypes from './modules/msg-types';
 import {sendMsg} from './modules/common';
 
-chrome.tabs.getSelected(null, tab => {
-    const isNormalPage = /^https?:\/\//.test(tab.url);
-    const currentTab = tab;
-    const hostName = parse(tab.url).hostname;
+chrome.tabs.getSelected(null, currentTab => {
+    const isNormalPage = /^https?:\/\//.test(currentTab.url);
+    const hostName = parse(currentTab.url).hostname;
     const enabled = new List().isEnabled(hostName);
 
     new Vue({
