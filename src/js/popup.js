@@ -2,6 +2,7 @@ import {parse} from 'url';
 import List from './modules/background/hosts-list';
 import * as msgTypes from './modules/msg-types';
 import {sendMsg} from './modules/common';
+import nativeSupport from './modules/native-support';
 
 chrome.tabs.getSelected(null, currentTab => {
     const isNormalPage = /^https?:\/\//.test(currentTab.url);
@@ -12,6 +13,7 @@ chrome.tabs.getSelected(null, currentTab => {
         el: '#app',
         data: {
             isNormalPage,
+            hasNativeSupport: false,
             hostName,
             enabled,
             foundUrls: []
@@ -31,6 +33,7 @@ chrome.tabs.getSelected(null, currentTab => {
             this.$el.classList.remove('hidden');
 
             sendMsg(msgTypes.GET_TAB_ANIMATIONS, currentTab.id).then(urls => this.foundUrls = urls);
+            nativeSupport().then(v => this.hasNativeSupport = v);
         }
     });
 });

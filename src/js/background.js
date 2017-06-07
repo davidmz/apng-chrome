@@ -2,12 +2,15 @@ import {parse} from 'url';
 import {getStatus, setStatus} from './modules/background/url-tracker';
 import * as msgTypes from './modules/msg-types';
 import List from './modules/background/hosts-list';
+import nativeSupport from './modules/native-support';
 
 const iconOn = {'19': 'icons/apng-logo-19-on.png', '38': 'icons/apng-logo-38-on.png'};
 const iconOff = {'19': 'icons/apng-logo-19-off.png', '38': 'icons/apng-logo-38-off.png'};
 const iconFound = {'19': 'icons/apng-logo-19-found.png', '38': 'icons/apng-logo-38-found.png'};
 
 const animationsInTabs = new Map();
+
+const nativeAPNG = nativeSupport();
 
 chrome.browserAction.setBadgeBackgroundColor({color: '#000'});
 
@@ -21,13 +24,19 @@ chrome.runtime.onMessage.addListener(({action, data}, sender, callback) => {
         callback();
 
     } else if (action === msgTypes.CHECK_HOST) {
-        const hostName = parse(sender.tab.url).hostname;
-        const enabled = new List().isEnabled(hostName);
-        chrome.browserAction.setIcon({
-            tabId: sender.tab.id,
-            path: enabled ? iconOn : iconOff
-        }, () => chrome.runtime.lastError);
-        callback(enabled);
+        nativeAPNG.then(supported => {
+            if (supported) {
+                callback(false);
+                return;
+            }
+            const hostName = parse(sender.tab.url).hostname;
+            const enabled = new List().isEnabled(hostName);
+            chrome.browserAction.setIcon({
+                tabId: sender.tab.id,
+                path: enabled ? iconOn : iconOff
+            }, () => chrome.runtime.lastError);
+            callback(enabled);
+        });
 
     } else if (action === msgTypes.APNG_FOUND) {
         const tabId = sender.tab.id;

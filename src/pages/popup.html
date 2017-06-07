@@ -37,25 +37,33 @@
 <body>
 <div class="container hidden" id="app">
     <div v-if="isNormalPage">
-        <p>
-            <img src="../icons/logo16.png" alt="APNG logo" width="16" height="16" class="apng-logo">
-            APNG is
-            <span class="text-{{enabled ? 'success' : 'danger'}}">{{enabled ? 'enabled' : 'disabled'}}</span>
-            on <strong>{{hostName}}</strong>
-        </p>
-        <p>
-            <button
-                    type="button"
-                    class="btn btn-sm btn-{{enabled ? 'primary' : 'success'}}"
-                    @click="toggleEnabled"
-            >{{enabled ? 'Disable' : 'Enable'}}</button>
-            (<a @click="openSettings">advanced settings</a>)
-        </p>
-        <div class="small text-muted" v-if="foundUrls.length &gt; 0">
-            {{foundUrls.length > 1 ? foundUrls.length + ' APNGs' : 'APNG'}} found:
-            <ul class="url-list">
-                <li v-for="url in foundUrls"><a href="{{url}}" target="_blank">{{url}}</a></li>
-            </ul>
+        <div v-if="hasNativeSupport">
+            <p>
+                <img src="../icons/logo16.png" alt="APNG logo" width="16" height="16" class="apng-logo">
+                Your browser have native APNG support. You no longer need this extension.
+            </p>
+        </div>
+        <div v-else>
+            <p>
+                <img src="../icons/logo16.png" alt="APNG logo" width="16" height="16" class="apng-logo">
+                APNG is
+                <span class="text-{{enabled ? 'success' : 'danger'}}">{{enabled ? 'enabled' : 'disabled'}}</span>
+                on <strong>{{hostName}}</strong>
+            </p>
+            <p>
+                <button
+                        type="button"
+                        class="btn btn-sm btn-{{enabled ? 'primary' : 'success'}}"
+                        @click="toggleEnabled"
+                >{{enabled ? 'Disable' : 'Enable'}}</button>
+                (<a @click="openSettings">advanced settings</a>)
+            </p>
+            <div class="small text-muted" v-if="foundUrls.length &gt; 0">
+                {{foundUrls.length > 1 ? foundUrls.length + ' APNGs' : 'APNG'}} found:
+                <ul class="url-list">
+                    <li v-for="url in foundUrls"><a href="{{url}}" target="_blank">{{url}}</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     <div v-else>
